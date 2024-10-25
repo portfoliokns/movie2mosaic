@@ -5,12 +5,30 @@ from tqdm import tqdm
 
 # モザイク処理
 def mosaic(img, x, y, w, h, size):
-    (x1, y1, x2, y2) = (x, y, x+w, y+h)
+
+    # 画像の幅と高さを取得
+    h_img, w_img = img.shape[:2]
+
+    # モザイク範囲が画像の境界を超えないように調整
+    x1 = max(0, x)
+    y1 = max(0, y)
+    x2 = min(w_img, x + w)
+    y2 = min(h_img, y + h)
+
+    # 調整された領域でスライス
     img_rec = img[y1:y2, x1:x2]
-    img_small = cv2.resize(img_rec, (size, size))
-    img_mos = cv2.resize(img_small, (w, h), interpolation=cv2.INTER_AREA)
+
+    # モザイク処理：縮小→拡大
+    mosaic_w = max(1, x2 - x1)
+    mosaic_h = max(1, y2 - y1)
+
+    img_small = cv2.resize(img_rec, (size, size), interpolation=cv2.INTER_LINEAR)
+    img_mos = cv2.resize(img_small, (mosaic_w, mosaic_h), interpolation=cv2.INTER_AREA)
+
+    # 画像にモザイク画像を重ねる
     img_out = img.copy()
     img_out[y1:y2, x1:x2] = img_mos
+
     return img_out
 
 # 各種パラメータ
